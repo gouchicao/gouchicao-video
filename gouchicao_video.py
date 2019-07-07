@@ -54,17 +54,18 @@ def recognition(frame):
     
     response = client.detect(cv2.imencode('.jpg', frame)[1].tobytes())
 
-    for object in response.object:
-        name = object.name
-        if name not in colors:
-            colors[name] = np.random.uniform(0, 255, size=(3))
+    if response:
+        for object in response.object:
+            name = object.name
+            if name not in colors:
+                colors[name] = np.random.uniform(0, 255, size=(3))
+            
+            rect = object.rectangle
+            cv2.rectangle(frame, (rect.x, rect.y), (rect.x+rect.w, rect.y+rect.h), colors[name], 2)
+            cv2.putText(frame, name, (rect.x, rect.y), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (50,170,50), lineType=cv2.LINE_AA)
         
-        rect = object.rectangle
-        cv2.rectangle(frame, (rect.x, rect.y), (rect.x+rect.w, rect.y+rect.h), colors[name], 2)
-        cv2.putText(frame, name, (rect.x, rect.y), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (50,170,50), lineType=cv2.LINE_AA)
-    
-    fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer)
-    cv2.putText(frame, "FPS : " + str(int(fps)), (20,50), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50,170,50), 2)
+        fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer)
+        cv2.putText(frame, "FPS : " + str(int(fps)), (20,50), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50,170,50), 2)
 
 
 def get_ext_name(filename):
@@ -76,10 +77,6 @@ def get_ext_name(filename):
     return ext_name
 
 
-#图片目录/Users/wjj/work/2019/LuNengDataSet/安全帽/hat2.mp4
-#视频/Users/wjj/vscode/py/race.mp4
-#图片文件/Users/wjj/GitHub/gouchicao/darknet/model-zoo/helmet/test/W020151223662891446363.jpg
-#python3 gouchicao_video.py -a 192.168.0.130:7713
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-a', '--server_address', type=str, help='server address 127.0.0.1:7713', default='[::]:7713')
