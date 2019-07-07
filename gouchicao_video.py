@@ -103,10 +103,6 @@ if __name__ == '__main__':
         for image_file in image_files:
             run(image_file)
     else:
-        # 如果是默认值，视频就设置为没有间隔。
-        if time_sleep == 0:
-            time_sleep = -1
-
         video_file = args.video
         if not video_file:
             video_file = 0
