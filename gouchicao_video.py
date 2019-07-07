@@ -13,7 +13,7 @@ WINDOW_NAME = 'gouchicao video'
 
 
 client = None
-colors = {}     #每个类别对应的标记颜色
+class_colors = {}     #每个类别对应的标记颜色
 image_exts = ['jpg', 'png', 'jpeg']
 time_sleep = 0
 
@@ -50,20 +50,26 @@ def run(video_file):
 def recognition(frame):
     timer = cv2.getTickCount()
     
-    response = client.detect(cv2.imencode('.jpg', frame)[1].tobytes())
+    image_data = cv2.imencode('.jpg', frame)[1].tobytes()
+    response = client.detect(image_data)
 
     if response:
         for object in response.object:
-            name = object.name
-            if name not in colors:
-                colors[name] = np.random.uniform(0, 255, size=(3))
+            class_name = object.name
+            class_color = get_class_color(class_name)
             
             rect = object.rectangle
-            cv2.rectangle(frame, (rect.x, rect.y), (rect.x+rect.w, rect.y+rect.h), colors[name], 2)
-            cv2.putText(frame, name, (rect.x, rect.y), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (50,170,50), lineType=cv2.LINE_AA)
+            cv2.rectangle(frame, (rect.x, rect.y), (rect.x+rect.w, rect.y+rect.h), class_color, 2)
+            cv2.putText(frame, class_name, (rect.x, rect.y), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,125,0), 2, lineType=cv2.LINE_AA)
         
         fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer)
-        cv2.putText(frame, "FPS : " + str(int(fps)), (20,50), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50,170,50), 2)
+        cv2.putText(frame, "FPS : " + str(int(fps)), (20,40), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50,170,50), 2)
+
+
+def get_class_color(class_name):
+    if class_name not in class_colors:
+        class_colors[class_name] = np.random.uniform(0, 255, size=(3))
+    return class_colors[class_name]
 
 
 def get_ext_name(filename):
