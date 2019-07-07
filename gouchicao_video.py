@@ -38,12 +38,10 @@ def run(video_file):
 
         cv2.imshow(WINDOW_NAME, frame)
 
-        key_code = cv2.waitKey(1)
+        delay = 1 if time_sleep <= 0 else time_sleep
+        key_code = cv2.waitKey(delay)
         if key_code == ord('q') or key_code == 27: #q or esc
-            break
-        
-        if time_sleep >= 0:
-            cv2.waitKey(time_sleep)
+            sys.exit()
 
     cap.release()
     cv2.destroyAllWindows()
