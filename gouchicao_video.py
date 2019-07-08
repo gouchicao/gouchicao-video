@@ -13,7 +13,7 @@ WINDOW_NAME = 'gouchicao video'
 
 client = None
 class_colors = {}     #每个类别对应的标记颜色
-image_exts = ['jpg', 'png', 'jpeg']
+image_exts = ['jpg', 'png', 'jpeg', 'bmp', 'tif']
 
 
 def run(video_file, time_delay):
