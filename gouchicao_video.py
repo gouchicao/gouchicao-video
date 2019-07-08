@@ -46,7 +46,7 @@ def run(video_file, time_delay):
 
 def recognition(frame):
     timer = cv2.getTickCount()
-    
+
     image_data = cv2.imencode('.jpg', frame)[1].tobytes()
     response = client.detect(image_data)
 
@@ -54,11 +54,11 @@ def recognition(frame):
         for object in response.object:
             class_name = object.name
             class_color = get_class_color(class_name)
-            
+
             rect = object.rectangle
             cv2.rectangle(frame, (rect.x, rect.y), (rect.x+rect.w, rect.y+rect.h), class_color, 2)
             cv2.putText(frame, class_name, (rect.x, rect.y), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,125,0), 2, lineType=cv2.LINE_AA)
-        
+
         fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer)
         cv2.putText(frame, "FPS : " + str(int(fps)), (20,40), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50,170,50), 2)
 
