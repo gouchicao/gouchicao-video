@@ -6,7 +6,6 @@ import cv2
 import numpy as np
 
 import darknet_model_client as dm_client
-from random import randint
 
 
 WINDOW_NAME = 'gouchicao video'
