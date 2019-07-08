@@ -15,10 +15,9 @@ WINDOW_NAME = 'gouchicao video'
 client = None
 class_colors = {}     #每个类别对应的标记颜色
 image_exts = ['jpg', 'png', 'jpeg']
-time_sleep = 0
 
 
-def run(video_file):
+def run(video_file, time_delay):
     cap = cv2.VideoCapture(video_file)
     if not cap.isOpened():
         print('video [{}] is not open'.format(video_file))
@@ -38,8 +37,7 @@ def run(video_file):
 
         cv2.imshow(WINDOW_NAME, frame)
 
-        delay = 1 if time_sleep <= 0 else time_sleep
-        key_code = cv2.waitKey(delay)
+        key_code = cv2.waitKey(time_delay)
         if key_code == ord('q') or key_code == 27: #q or esc
             sys.exit()
 
@@ -87,12 +85,12 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--video', type=str, help='video file path. default open camera.')
     parser.add_argument('-f', '--image_file', type=str, help='image file path.')
     parser.add_argument('-d', '--image_directory', type=str, help='image directory.')
-    parser.add_argument('-t', '--time_sleep', type=int, help='The time interval between frames and frames, in milliseconds. Set to 0, pause, then press any key to continue displaying.', default=0)
+    parser.add_argument('-t', '--time_delay', type=int, help='The time delay between frames and frames, in milliseconds. Set to 0, pause, then press any key to continue displaying.', default=1)
 
     args = parser.parse_args()
 
     client = dm_client.gRPCClient(args.server_address)
-    time_sleep = args.time_sleep
+    time_delay = args.time_delay
 
     image_files = []
     if args.image_file:
@@ -106,10 +104,14 @@ if __name__ == '__main__':
                     image_files.append(os.path.join(parent, filename))
 
     if image_files:
+        # 如果只有一张图片且没有设置time_delay值，那么就设置为0。代表等待按任意键继续。
+        if len(image_files) == 1 and time_delay == 1:
+            time_delay = 0
+
         for image_file in image_files:
-            run(image_file)
+            run(image_file, time_delay)
     else:
         video_file = args.video
         if not video_file:
             video_file = 0
-        run(video_file)
+        run(video_file, time_delay)
