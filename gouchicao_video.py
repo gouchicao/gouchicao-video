@@ -56,11 +56,15 @@ def recognition(frame):
             class_color = get_class_color(class_name)
 
             rect = object.rectangle
-            cv2.rectangle(frame, (rect.x, rect.y), (rect.x+rect.w, rect.y+rect.h), class_color, 2)
-            cv2.putText(frame, class_name, (rect.x, rect.y), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,125,0), 2, lineType=cv2.LINE_AA)
+            cv2.rectangle(frame, (rect.x, rect.y), (rect.x+rect.w, rect.y+rect.h), class_color, thickness=2)
+            
+            # 绘制标签
+            size = cv2.getTextSize(class_name, cv2.FONT_HERSHEY_SIMPLEX, 1, thickness=2)[0]
+            cv2.rectangle(frame, (rect.x, rect.y), (rect.x+size[0], rect.y-size[1]), class_color, thickness=-1)
+            cv2.putText(frame, class_name, (rect.x, rect.y), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (250,250,250), thickness=2, lineType=cv2.LINE_AA)
 
         fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer)
-        cv2.putText(frame, "FPS : " + str(int(fps)), (20,40), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50,170,50), 2)
+        cv2.putText(frame, "FPS : " + str(int(fps)), (20,40), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50,170,50), thickness=2)
 
 
 def get_class_color(class_name):
