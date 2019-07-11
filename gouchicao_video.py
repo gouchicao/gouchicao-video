@@ -1,7 +1,9 @@
 import argparse
 import os
-import time
 import sys
+import time
+import datetime as dt
+
 import cv2
 import numpy as np
 
@@ -16,7 +18,7 @@ class_colors = {}     #每个类别对应的标记颜色
 image_exts = ['jpg', 'png', 'jpeg', 'bmp', 'tif']
 
 
-def run(video_file, time_delay):
+def run(video_file, time_delay, output_directory):
     cap = cv2.VideoCapture(video_file)
     if not cap.isOpened():
         print('video [{}] is not open'.format(video_file))
@@ -33,6 +35,11 @@ def run(video_file, time_delay):
             frame = cv2.flip(frame, 1, 0)
 
         recognition(frame)
+
+        if output_directory:
+            filename = dt.datetime.now().strftime('%Y%m%d-%H%M%S-%f') + '.jpg'
+            file_path = os.path.join(output_directory, filename)
+            cv2.imwrite(file_path, frame)
 
         cv2.imshow(WINDOW_NAME, frame)
 
@@ -88,6 +95,7 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--video', type=str, help='video file path. default open camera.')
     parser.add_argument('-f', '--image_file', type=str, help='image file path.')
     parser.add_argument('-d', '--image_directory', type=str, help='image directory.')
+    parser.add_argument('-o', '--output_directory', type=str, help='output predict directory.')
     parser.add_argument('-t', '--time_delay', type=int, help='The time delay between frames and frames, in milliseconds. Set to 0, pause, then press any key to continue displaying.', default=1)
 
     args = parser.parse_args()
@@ -106,15 +114,19 @@ if __name__ == '__main__':
                 if ext_name in image_exts:
                     image_files.append(os.path.join(parent, filename))
 
+    if args.output_directory:
+        if not os.path.exists(args.output_directory):
+            os.makedirs(args.output_directory)
+
     if image_files:
         # 如果只有一张图片且没有设置time_delay值，那么就设置为0。代表等待按任意键继续。
         if len(image_files) == 1 and time_delay == 1:
             time_delay = 0
 
         for image_file in image_files:
-            run(image_file, time_delay)
+            run(image_file, time_delay, args.output_directory)
     else:
         video_file = args.video
         if not video_file:
             video_file = 0
-        run(video_file, time_delay)
+        run(video_file, time_delay, args.output_directory)
