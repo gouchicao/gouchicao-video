@@ -18,14 +18,16 @@ class_colors = {}     #每个类别对应的标记颜色
 image_exts = ['jpg', 'png', 'jpeg', 'bmp', 'tif']
 
 
-def run(video_file, time_delay, output_directory):
+def run(video_file, time_delay, output_directory, is_output_image=False, is_output_video=False):
     cap = cv2.VideoCapture(video_file)
     if not cap.isOpened():
         print('video [{}] is not open'.format(video_file))
         sys.exit()
 
-    tracker = None
-    fps = None
+    video_writer = None
+    if is_output_video:
+        video_writer = get_video_writer(cap, output_directory)
+    
     while True:
         ok, frame = cap.read()
         if not ok:
@@ -36,10 +38,10 @@ def run(video_file, time_delay, output_directory):
 
         recognition(frame)
 
-        if output_directory:
-            filename = dt.datetime.now().strftime('%Y%m%d-%H%M%S-%f') + '.jpg'
-            file_path = os.path.join(output_directory, filename)
-            cv2.imwrite(file_path, frame)
+        if is_output_video:
+            video_writer.write(frame)
+        elif is_output_image:
+            write_output_image(frame, output_directory)
 
         cv2.imshow(WINDOW_NAME, frame)
 
@@ -49,6 +51,26 @@ def run(video_file, time_delay, output_directory):
 
     cap.release()
     cv2.destroyAllWindows()
+
+
+def get_video_writer(cap, output_directory):
+    fps = 24.0
+    frameSize = (int(cap.get(3)), int(cap.get(4)))
+    
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    filename = get_filename_with_datetime() + '.mp4'
+    file_path = os.path.join(output_directory, filename)
+    return cv2.VideoWriter(file_path, fourcc, fps, frameSize)
+
+
+def get_filename_with_datetime():
+    return dt.datetime.now().strftime('%Y%m%d-%H%M%S-%f')
+
+
+def write_output_image(frame, output_directory):
+    filename = get_filename_with_datetime() + '.jpg'
+    file_path = os.path.join(output_directory, filename)
+    cv2.imwrite(file_path, frame)
 
 
 def recognition(frame):
@@ -114,9 +136,10 @@ if __name__ == '__main__':
                 if ext_name in image_exts:
                     image_files.append(os.path.join(parent, filename))
 
-    if args.output_directory:
-        if not os.path.exists(args.output_directory):
-            os.makedirs(args.output_directory)
+    output_directory = args.output_directory
+    if output_directory:
+        if not os.path.exists(output_directory):
+            os.makedirs(output_directory)
 
     if image_files:
         # 如果只有一张图片且没有设置time_delay值，那么就设置为0。代表等待按任意键继续。
@@ -124,9 +147,9 @@ if __name__ == '__main__':
             time_delay = 0
 
         for image_file in image_files:
-            run(image_file, time_delay, args.output_directory)
+            run(image_file, time_delay, output_directory, is_output_image=bool(output_directory))
     else:
         video_file = args.video
         if not video_file:
             video_file = 0
-        run(video_file, time_delay, args.output_directory)
+        run(video_file, time_delay, output_directory, is_output_video=bool(output_directory))
